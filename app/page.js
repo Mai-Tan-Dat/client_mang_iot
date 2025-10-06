@@ -5,7 +5,7 @@ export default function Home() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_DOMAIN}/data`) 
+    fetch(`https://server-mangiot.vercel.app/data`) 
       .then((res) => res.json())
       .then((result) => {
         setData(result.data || []);
