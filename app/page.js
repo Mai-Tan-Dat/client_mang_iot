@@ -4,19 +4,27 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [data, setData] = useState([]);
   const [ledStatus, setLedStatus] = useState(false);
-  const [threshold, setThreshold] = useState(30); 
-  const [thresholdInput, setThresholdInput] = useState(30); 
+  const [threshold, setThreshold] = useState(30);
+  const [thresholdInput, setThresholdInput] = useState(30);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const deviceId = "24:0A:C4:00:01:10";
 
+  const fetchSensorData = async () => {
+    try {
+      const res = await fetch("https://server-mangiot.vercel.app/data");
+      const result = await res.json();
+      setData(result.data || []);
+    } catch (err) {
+      console.error("❌ Lỗi khi lấy dữ liệu cảm biến:", err);
+    }
+  };
+
   useEffect(() => {
-    fetch("https://server-mangiot.vercel.app/data")
-      .then((res) => res.json())
-      .then((result) => {
-        setData(result.data || []);
-      })
-      .catch((err) => console.error("❌ Lỗi khi lấy dữ liệu cảm biến:", err));
+    fetchSensorData();
+    const interval = setInterval(fetchSensorData, 3000); 
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -44,10 +52,10 @@ export default function Home() {
   const handlePrevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
   const handleNextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
 
+  // 💡 Điều khiển LED
   const handleToggleLed = async () => {
     const newStatus = !ledStatus;
     setLedStatus(newStatus);
-
     try {
       const response = await fetch("https://server-mangiot.vercel.app/control-led", {
         method: "POST",
